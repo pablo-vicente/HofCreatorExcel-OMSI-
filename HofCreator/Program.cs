@@ -19,6 +19,7 @@ namespace HofCreator
             sb.Append(AdicionarInformacoesMapa(package));
             sb.Append(AdicionarTerminus(package));
             sb.Append(AdicionarBusStops(package));
+            sb.Append(AdicionarTripsRoutas(package));
 
             File.WriteAllText(@"C:\Users\pablo\OneDrive\1-Documentos\2 - Projetos\3 - Map Palhocity\Palhocity.hof", sb.ToString());
         }
@@ -109,6 +110,45 @@ namespace HofCreator
                     sd.AppendFormat("{0}\n", busstop);
                 }
                 sd.AppendFormat("{0}\n", "-----------------------------------------------------------");
+            }
+            return sd;
+        }
+
+        public static StringBuilder AdicionarTripsRoutas(ExcelPackage package)
+        {
+            ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+            int rows = worksheet.Dimension.Rows;
+
+            StringBuilder sd = new StringBuilder();
+
+            sd.AppendFormat("\n\n\n{0}\n", "===========================================================");
+            sd.AppendFormat("{0}\n", "========================= ROUTES ==========================");
+            sd.AppendFormat("{0}\n", "===========================================================");
+
+            for (int i = 2; i <= rows; i++)
+            {
+                var linebus = worksheet.Cells[$"A{i}"].Value;
+                if (linebus == null) break; ;
+
+                if (!linebus.ToString().Equals("0"))
+                {
+                    string firtBusStop = worksheet.Cells[$"P{i}"].Value == null ? "" : worksheet.Cells[$"P{i}"].Value.ToString();
+                    string lastBusStop = worksheet.Cells[$"Q{i}"].Value == null ? "" : worksheet.Cells[$"Q{i}"].Value.ToString();
+                    var nLine = linebus.ToString().Replace("-", "");
+                    var nRoute = $"{0}{worksheet.Cells[$"B{i}"].Value.ToString()}";
+
+                    sd.AppendFormat("{0}\n", $"Line {nLine} Route {nRoute} : {firtBusStop} => {lastBusStop}");
+                    sd.AppendFormat("{0}\n\n", "-----------------------------------------------------------");
+                    sd.AppendFormat("{0}\n", "[infosystem_trip]");
+                    sd.AppendFormat("{0}\n", $"{nLine}{nRoute}");
+                    sd.AppendFormat("{0}\n", $"{firtBusStop} => {lastBusStop} 1");
+                    sd.AppendFormat("{0}\n", worksheet.Cells[$"J{i}"].Value == null ? "" : worksheet.Cells[$"J{i}"].Value.ToString());
+                    sd.AppendFormat("{0}\n\n", "via");
+                    sd.AppendFormat("{0}\n", "[infosystem_busstop_list]");
+                    sd.AppendFormat("{0}\n", "2");
+                    sd.AppendFormat("{0}\n", firtBusStop);
+                    sd.AppendFormat("{0}\n\n", lastBusStop);
+                }
             }
             return sd;
         }
